@@ -66,6 +66,18 @@
         app:backgroundTint="@color/white"
         app:tint="@color/purple_500" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/measureButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/measure_distance"
+        app:layout_constraintBottom_toTopOf="@id/gpsButton"
+        app:layout_constraintEnd_toStartOf="@id/zoomControlsContainer"
+        app:backgroundTint="@color/white"
+        app:tint="@color/purple_500" />
+
     <LinearLayout
         android:id="@+id/zoomControlsContainer"
         android:layout_width="wrap_content"

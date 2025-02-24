@@ -32,9 +32,13 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import android.graphics.Color;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -45,6 +49,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     SearchView searchView;
     Button btnExit;
     LocationCallback locationCallback;
+    private List<LatLng> measurePoints = new ArrayList<>();
+    private Polyline measureLine;
+    private boolean isMeasuring = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +99,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 myMap.animateCamera(CameraUpdateFactory.zoomOut());
             }
         });
+
+        FloatingActionButton measureButton = findViewById(R.id.measureButton);
+        measureButton.setImageResource(R.drawable.ic_measure);
+        measureButton.setOnClickListener(v -> toggleMeasuring());
 
         getLastLocation();
     }
@@ -231,7 +242,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         myMap.getUiSettings().setZoomControlsEnabled(false);
         myMap.getUiSettings().setZoomGesturesEnabled(true);
 
-        myMap.setOnMapClickListener(latLng -> putRedMarkerAndMoveCamera(latLng, "Selected Location"));
+        myMap.setOnMapClickListener(latLng -> {
+            if (isMeasuring) {
+                handleMeasureClick(latLng);
+            } else {
+                putRedMarkerAndMoveCamera(latLng, "Selected Location");
+            }
+        });
 
         getLastLocation();
     }
@@ -269,5 +286,62 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             myMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleMeasuring() {
+        isMeasuring = !isMeasuring;
+        if (!isMeasuring) {
+            measurePoints.clear();
+            if (measureLine != null) {
+                measureLine.remove();
+            }
+        }
+        Toast.makeText(this, 
+            isMeasuring ? "Measuring mode activated" : "Measuring mode deactivated", 
+            Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleMeasureClick(LatLng point) {
+        measurePoints.add(point);
+        
+        myMap.addMarker(new MarkerOptions()
+            .position(point)
+            .title("Point " + measurePoints.size())
+            .icon(BitmapDescriptorFactory.defaultMarker(
+                measurePoints.size() == 1 ? BitmapDescriptorFactory.HUE_GREEN : BitmapDescriptorFactory.HUE_RED)));
+        
+        if (measurePoints.size() == 2) {
+            if (measureLine != null) {
+                measureLine.remove();
+            }
+            
+            measureLine = myMap.addPolyline(new PolylineOptions()
+                .add(measurePoints.get(0), measurePoints.get(1))
+                .width(5)
+                .color(Color.BLUE));
+            
+            float[] results = new float[1];
+            Location.distanceBetween(
+                measurePoints.get(0).latitude, measurePoints.get(0).longitude,
+                measurePoints.get(1).latitude, measurePoints.get(1).longitude,
+                results);
+            
+            float distance = results[0];
+            String distanceText;
+            if (distance >= 1000) {
+                distanceText = String.format("Distance: %.2f km", distance/1000);
+            } else {
+                distanceText = String.format("Distance: %.0f m", distance);
+            }
+            Toast.makeText(this, distanceText, Toast.LENGTH_LONG).show();
+            
+            new Handler().postDelayed(() -> {
+                measurePoints.clear();
+                myMap.clear();
+                if (measureLine != null) {
+                    measureLine.remove();
+                }
+            }, 3000);
+        }
     }
 }

@@ -8,4 +8,5 @@
     <string name="gps_button">GPS Location</string>
     <string name="zoom_in_button">Zoom In</string>
     <string name="zoom_out_button">Zoom Out</string>
+    <string name="measure_distance">Measure Distance</string>
 </resources>
