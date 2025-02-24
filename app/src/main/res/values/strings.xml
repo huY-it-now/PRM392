@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Group 2 Map</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="invalid_credentials">Invalid username or password</string>
+    <string name="please_enter_credentials">Please enter both username and password</string>
+    <string name="gps_button">GPS Location</string>
+    <string name="zoom_in_button">Zoom In</string>
+    <string name="zoom_out_button">Zoom Out</string>
+</resources>
